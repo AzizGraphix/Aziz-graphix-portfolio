@@ -3,14 +3,17 @@ import { Resend } from "resend";
 
 // Add RESEND_API_KEY to your .env.local
 // Your sending domain must be verified in the Resend dashboard
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Created lazily so the build doesn't fail when the env var isn't present at build time.
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
 
@@ -36,7 +39,7 @@ export async function POST(req: NextRequest) {
     const safeProjectType = escapeHtml(projectType ?? "—");
     const safeMessage = escapeHtml(message);
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: "Your Name <you@example.com>",
       to: ["you@example.com"],
       replyTo: email,
